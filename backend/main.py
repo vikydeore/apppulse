@@ -8,7 +8,7 @@ app = FastAPI(title="AppPulse", version="1.0.0")
 templates = Jinja2Templates(directory="templates") 
 
 @app.get("/", response_class=HTMLResponse) 
-async def read_root(request: Request):
+async def read_root(request: requests):
     return templates.TemplateResponse("index.html", {"request": request}) 
 
 @app.get("/api/health") 
