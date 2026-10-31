@@ -1,5 +1,5 @@
 from fastapi import FastAPI, requests
-from fastapi.response import HTMLResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI(title="AppPulse", version="1.0.0")
