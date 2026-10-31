@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppPulse - Uptime & Performance Monitor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xl font-bold tracking-tight text-white">AppPulse</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Live Uptime</span>
+            </div>
+            <div class="text-sm text-slate-400">
+                Server: <span class="text-slate-200 font-mono">Ubuntu VPS</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        
+        <!-- Stats Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+                <h3 class="text-sm font-medium text-slate-400">Total Monitored URLs</h3>
+                <p id="total-count" class="text-3xl font-bold text-white mt-2">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+                <h3 class="text-sm font-medium text-slate-400">Operational Systems</h3>
+                <p id="up-count" class="text-3xl font-bold text-emerald-400 mt-2">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+                <h3 class="text-sm font-medium text-slate-400">System Status</h3>
+                <p class="text-3xl font-bold text-indigo-400 mt-2">Normal</p>
+            </div>
+        </div>
+
+        <!-- Add URL Section -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-10 shadow-sm">
+            <h2 class="text-lg font-semibold text-white mb-4">Add Endpoint to Monitor</h2>
+            <form id="add-url-form" class="flex flex-col sm:flex-row gap-4">
+                <input type="text" id="site-name" placeholder="Service Name (e.g., My Blog)" required
+                    class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500">
+                <input type="url" id="site-url" placeholder="https://example.com" required
+                    class="flex-2 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-indigo-500">
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-lg transition">
+                    Add Monitor
+                </button>
+            </form>
+        </div>
+
+        <!-- Monitored Endpoints Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-white">Monitored Endpoints</h2>
+                <button onclick="loadMonitors()" class="text-xs text-indigo-400 hover:text-indigo-300">Refresh</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider bg-slate-950/50">
+                            <th class="px-6 py-3">Name</th>
+                            <th class="px-6 py-3">URL</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Response Time</th>
+                            <th class="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monitors-table-body" class="divide-y divide-slate-800 text-sm">
+                        <!-- Populated dynamically via JS -->
+                        <tr>
+                            <td colspan="5" class="px-6 py-6 text-center text-slate-500">Loading monitors...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Simple Frontend JavaScript Logic -->
+    <script>
+        async function loadMonitors() {
+            // For now, we mock or fetch data from backend endpoints
+            // We will connect this to FastAPI backend storage in the next step
+            const tbody = document.getElementById('monitors-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td class="px-6 py-4 font-medium text-white">AppPulse API</td>
+                    <td class="px-6 py-4 text-slate-400 font-mono text-xs">https://apppulse.tweakbin.site/</td>
+                    <td class="px-6 py-4"><span class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Operational</span></td>
+                    <td class="px-6 py-4 text-slate-300">42 ms</td>
+                    <td class="px-6 py-4 text-right"><button class="text-rose-400 hover:text-rose-300 text-xs">Delete</button></td>
+                </tr>
+            `;
+            document.getElementById('total-count').innerText = '1';
+            document.getElementById('up-count').innerText = '1';
+        }
+
+        document.getElementById('add-url-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alert('Monitor addition hook ready! Let\'s hook this up to the FastAPI backend database.');
+        });
+
+        loadMonitors();
+    </script>
+</body>
+</html>

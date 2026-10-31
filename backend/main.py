@@ -1,20 +1,16 @@
-from fastapi import FastAPI
-import requests
+from fastapi import FastAPI, requests
+from fastapi.response import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
-app = FastAPI(title="AppPulse Backend", version="1.0")
+app = FastAPI(title="AppPulse", version="1.0.0")
 
-@app.get("/")
-def read_root():
+# Setup templates directory
+templates = Jinja2Templates(directory="templates") 
+
+@app.get("/", response_class=HTMLResponse) 
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request}) 
+
+@app.get("/api/health") 
+async def health_check():
     return {"status": "online", "service": "AppPulse API"}
-
-@app.get("/check")
-def check_url(url: str):
-    try:
-        response = requests.get(url, timeout=5)
-        return {
-            "url": url,
-            "status_code": response.status_code,
-            "healthy": response.status_code == 200
-        }
-    except Exception as e:
-        return {"url": url, "healthy": False, "error": str(e)}
