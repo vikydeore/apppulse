@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import time
 import requests
+import threading
 
 from database import engine, SessionLocal, Base
 import models
@@ -32,18 +33,38 @@ class MonitorCreate(BaseModel):
 def check_url_health(url: str):
     start_time = time.time()
     try:
-        # Send a GET request with a 5-second timeout
         response = requests.get(url, timeout=5, allow_redirects=True)
         latency = round((time.time() - start_time) * 1000) # Convert to milliseconds
         
-        # Consider 2xx and 3xx status codes as operational
         if 200 <= response.status_code < 400:
             return "Operational", f"{latency} ms"
         else:
             return "Down", f"{latency} ms"
     except requests.RequestException:
-        # Connection error, timeout, or invalid domain name
         return "Down", "N/A"
+
+# Background worker thread to continuously re-check all URLs every 10 seconds
+def background_monitor_worker():
+    while True:
+        time.sleep(10)
+        db = SessionLocal()
+        try:
+            monitors = db.query(models.Monitor).all()
+            for monitor in monitors:
+                status, response_time = check_url_health(monitor.url)
+                monitor.status = status
+                monitor.response_time = response_time
+                db.commit()
+        except Exception as e:
+            print(f"Background monitor error: {e}")
+        finally:
+            db.close()
+
+# Start background thread when FastAPI boots up
+@app.on_event("startup")
+async def startup_event():
+    worker_thread = threading.Thread(target=background_monitor_worker, daemon=True)
+    worker_thread.start()
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
@@ -59,10 +80,9 @@ async def get_monitors(db: Session = Depends(get_db)):
     monitors = db.query(models.Monitor).all()
     return monitors
 
-# API: Add a new monitor endpoint and perform live check
+# API: Add a new monitor endpoint and do initial check
 @app.post("/api/monitors")
 async def create_monitor(monitor: MonitorCreate, db: Session = Depends(get_db)):
-    # Perform real-time health check on the provided URL
     status, response_time = check_url_health(monitor.url)
     
     db_monitor = models.Monitor(
@@ -75,3 +95,13 @@ async def create_monitor(monitor: MonitorCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_monitor)
     return db_monitor
+
+# API: Delete a monitor endpoint by ID
+@app.delete("/api/monitors/{monitor_id}")
+async def delete_monitor(monitor_id: int, db: Session = Depends(get_db)):
+    monitor = db.query(models.Monitor).filter(models.Monitor.id == monitor_id).first()
+    if not monitor:
+        raise HTTPException(status_code=404, detail="Monitor not found")
+    db.delete(monitor)
+    db.commit()
+    return {"message": "Monitor deleted successfully"}
